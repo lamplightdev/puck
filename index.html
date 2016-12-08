@@ -47,7 +47,7 @@
       connection.write('reset();\n', () => {
         setTimeout(() => {
           connection.write(`
-            NRF.nfcURL("https://lamplightdev.com");
+            NRF.nfcURL("https://lamplightdev.github.io/puck/");
             Bluetooth.println(NRF);
             setInterval(() => {
               var state = BTN1.read();
