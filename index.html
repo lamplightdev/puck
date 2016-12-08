@@ -1,0 +1,76 @@
+<html>
+ <head>
+ </head>
+ <body>
+  <script src="https://www.puck-js.com/puck.js"></script>
+
+  <button class='button-connect'>Connect</button>
+  <div class='state-btn'>[]</div>
+
+  <script>
+  let connection = null;
+
+  const buttonConnect = document.querySelector('.button-connect');
+  const stateBtn = document.querySelector('.state-btn');
+
+  const onLine = v => {
+    stateBtn.textContent = `${JSON.stringify(v)}`;
+  };
+
+  buttonConnect.addEventListener('click', () => {
+    if (connection) {
+      connection.close();
+      connection = null;
+    }
+
+    Puck.connect(connectResult => {
+      if (!connectResult) {
+        console.warn('Couldn\'t connect to Puck');
+        return;
+      }
+
+      connection = connectResult;
+
+      let responseBuffer = '';
+
+      connection.on('data', data => {
+        responseBuffer += data;
+
+        let i = responseBuffer.indexOf('\n');
+        while (i >= 0) {
+          onLine(responseBuffer.substr(0, i));
+          responseBuffer = responseBuffer.substr(i + 1);
+          i = responseBuffer.indexOf('\n');
+        }
+      });
+
+      connection.write('reset();\n', () => {
+        setTimeout(() => {
+          connection.write(`
+            NRF.nfcURL("https://lamplightdev.com");
+            Bluetooth.println(NRF);
+            setInterval(() => {
+              var state = BTN1.read();
+              if (state) {
+                LED1.set();
+              } else {
+                LED1.reset();
+              }
+              Bluetooth.println(state);
+            },100);
+          `, () => { console.log('Ready...'); });
+        }, 1500);
+      });
+    });
+  });
+
+   /*
+    const readButton = () => {
+      Puck.eval('BTN.read()', x => {
+        document.querySelector('.button-state').textContent = x;
+      });
+    };
+    */
+  </script>
+ </body>
+</html>
