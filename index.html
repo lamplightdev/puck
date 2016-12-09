@@ -1,11 +1,18 @@
-<html>
- <head>
- </head>
+<!DOCTYPE html>
+
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport"
+      content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes"
+    >
+  </head>
  <body>
   <script src="https://www.puck-js.com/puck.js"></script>
 
   <button class='button-connect'>Connect</button>
-  <div class='state-btn'>[]</div>
+  <div class='state-btn'></div>
 
   <script>
   let connection = null;
@@ -14,7 +21,7 @@
   const stateBtn = document.querySelector('.state-btn');
 
   const onLine = v => {
-    stateBtn.textContent = `${JSON.stringify(v)}`;
+    stateBtn.textContent += `${JSON.stringify(v)}`.trim();
   };
 
   buttonConnect.addEventListener('click', () => {
@@ -49,15 +56,37 @@
           connection.write(`
             NRF.nfcURL("https://lamplightdev.github.io/puck/");
             Bluetooth.println(NRF);
+
+            var lastState = false;
+            var lastTime = null;
+            var longDuration = 200;
+
             setInterval(() => {
               var state = BTN1.read();
+
               if (state) {
                 LED1.set();
               } else {
                 LED1.reset();
               }
-              Bluetooth.println(state);
-            },100);
+
+              if (state !== lastState) {
+                var now = Date.now();
+                if (state) {
+                  lastTime = now;
+                } else {
+                  var diff = now - lastTime;
+
+                  if (diff > longDuration) {
+                    Bluetooth.println('-');
+                  } else {
+                    Bluetooth.println('.');
+                  }
+                }
+
+                lastState = state;
+              }
+            }, 100);
           `, () => { console.log('Ready...'); });
         }, 1500);
       });
