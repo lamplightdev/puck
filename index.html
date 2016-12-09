@@ -21,7 +21,7 @@
   const stateBtn = document.querySelector('.state-btn');
 
   const onLine = v => {
-    stateBtn.textContent += `${JSON.stringify(v)}`.trim();
+    stateBtn.innerHTML += `<br>${JSON.stringify(v)}`;
   };
 
   buttonConnect.addEventListener('click', () => {
